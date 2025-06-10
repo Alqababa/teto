@@ -172,7 +172,7 @@ function prepareInvoiceData() {
 }
 
 async function sendToGoogleScript(data) {
-    const scriptUrl = 'YOUR_GOOGLE_SCRIPT_URL'; // ← ضع هنا رابط Google Apps Script
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzRCVUdw-UDL58JO7FKYU0gR4o24EoZY8PtdKLy0dM/dev'; // ← ضع هنا رابط Google Apps Script
     
     const response = await fetch(scriptUrl, {
         method: 'POST',
