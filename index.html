@@ -1,565 +1,99 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <title>نظام إدارة الفواتير</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدخال الفواتير</title>
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
     <style>
-      :root {
-        --primary-color: #3498db;
-        --secondary-color: #2ecc71;
-        --danger-color: #e74c3c;
-        --warning-color: #f39c12;
-        --dark-color: #2c3e50;
-        --light-color: #ecf0f1;
-      }
-
-      body {
-        font-family: "Tajawal", sans-serif;
-        background: #f5f7fa;
-        margin: 0;
-        padding: 0;
-        direction: rtl;
-      }
-      .container {
-        max-width: 800px;
-        background: white;
-        margin: 20px auto;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
-      h2 {
-        text-align: center;
-        color: var(--dark-color);
-        margin-bottom: 25px;
-      }
-      .tabs {
-        display: flex;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #ddd;
-      }
-      .tab {
-        padding: 10px 20px;
-        cursor: pointer;
-        font-weight: 500;
-        color: var(--dark-color);
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s;
-      }
-      .tab.active {
-        border-bottom: 3px solid var(--primary-color);
-        color: var(--primary-color);
-      }
-      .tab-content {
-        display: none;
-      }
-      .tab-content.active {
-        display: block;
-      }
-      label {
-        display: block;
-        margin-top: 18px;
-        font-weight: 500;
-        color: var(--dark-color);
-      }
-      input,
-      select,
-      textarea {
-        width: 100%;
-        padding: 12px 15px;
-        margin-top: 8px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-family: "Tajawal", sans-serif;
-        font-size: 15px;
-        transition: border 0.3s;
-      }
-      input:focus,
-      select:focus,
-      textarea:focus {
-        border-color: var(--primary-color);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-      }
-      button {
-        margin-top: 25px;
-        width: 100%;
-        padding: 14px;
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-      button:hover {
-        background-color: #2980b9;
-      }
-      button.secondary {
-        background-color: var(--secondary-color);
-      }
-      button.secondary:hover {
-        background-color: #27ae60;
-      }
-      .message {
-        margin-top: 20px;
-        padding: 12px;
-        border-radius: 8px;
-        text-align: center;
-        font-weight: 500;
-      }
-      .success {
-        background-color: #d4edda;
-        color: #155724;
-      }
-      .error {
-        background-color: #f8d7da;
-        color: #721c24;
-      }
-      .loading {
-        background-color: #fff3cd;
-        color: #856404;
-      }
-      .total-display {
-        margin-top: 10px;
-        font-size: 18px;
-        font-weight: bold;
-        color: var(--dark-color);
-        text-align: center;
-        padding: 10px;
-        background-color: var(--light-color);
-        border-radius: 8px;
-      }
-      .company-list {
-        margin-top: 20px;
-      }
-      .company-item {
-        padding: 15px;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        cursor: pointer;
-        transition: all 0.3s;
-      }
-      .company-item:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      .company-name {
-        font-weight: 700;
-        color: var(--primary-color);
-      }
-      .company-total {
-        font-weight: 500;
-        color: var(--dark-color);
-      }
-      .invoice-details {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px dashed #ddd;
-        display: none;
-      }
-      .invoice-item {
-        padding: 10px;
-        background: #f9f9f9;
-        border-radius: 6px;
-        margin-bottom: 8px;
-      }
-      .report-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-      }
-      .report-actions button {
-        margin-top: 0;
-        flex: 1;
-      }
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            display: none;
+        }
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>نظام إدارة الفواتير</h2>
-
-      <div class="tabs">
-        <div class="tab active" data-tab="add-invoice">إضافة فاتورة</div>
-        <div class="tab" data-tab="view-invoices">عرض الفواتير</div>
-        <div class="tab" data-tab="reports">التقارير</div>
-      </div>
-
-      <!-- تبويب إضافة فاتورة -->
-      <div id="add-invoice" class="tab-content active">
-        <form id="invoiceForm">
-          <label for="date">التاريخ</label>
-          <input type="date" id="date" name="date" required />
-
-          <label for="company">اسم الشركة</label>
-          <input
-            type="text"
-            id="company"
-            name="company"
-            required
-            placeholder="أدخل اسم الشركة"
-            list="companyList"
-          />
-          <datalist id="companyList"></datalist>
-
-          <label for="product">اسم المنتج</label>
-          <input
-            type="text"
-            id="product"
-            name="product"
-            required
-            placeholder="أدخل اسم المنتج"
-          />
-
-          <label for="quantity">الكمية</label>
-          <input
-            type="number"
-            id="quantity"
-            name="quantity"
-            required
-            min="0.01"
-            step="0.01"
-            placeholder="أدخل الكمية"
-          />
-
-          <label for="price">السعر</label>
-          <input
-            type="number"
-            id="price"
-            name="price"
-            required
-            min="0.01"
-            step="0.01"
-            placeholder="أدخل السعر"
-          />
-
-          <div class="total-display" id="totalDisplay">
-            <i class="fas fa-calculator"></i> الإجمالي: 0.00
-          </div>
-
-          <button type="submit" id="submitBtn">
-            <i class="fas fa-paper-plane"></i> إرسال الفاتورة
-          </button>
-
-          <div class="message" id="responseMsg"></div>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">نظام إدخال الفواتير</h1>
+        
+        <form id="invoiceForm" class="needs-validation" novalidate>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="invoiceNumber" class="form-label">رقم الفاتورة</label>
+                    <input type="text" class="form-control" id="invoiceNumber" required>
+                    <div class="error-message" id="invoiceNumberError">يجب إدخال رقم الفاتورة</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="invoiceDate" class="form-label">تاريخ الفاتورة</label>
+                    <input type="date" class="form-control" id="invoiceDate" required>
+                    <div class="error-message" id="invoiceDateError">يجب إدخال تاريخ الفاتورة</div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplier" class="form-label">المورد</label>
+                    <select class="form-select" id="supplier" required>
+                        <option value="">اختر المورد</option>
+                        <option value="supplier1">مورد 1</option>
+                        <option value="supplier2">مورد 2</option>
+                    </select>
+                    <div class="error-message" id="supplierError">يجب اختيار المورد</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="totalAmount" class="form-label">المبلغ الإجمالي</label>
+                    <input type="number" class="form-control" id="totalAmount" step="0.01" required>
+                    <div class="error-message" id="totalAmountError">يجب إدخال المبلغ الإجمالي</div>
+                </div>
+            </div>
+            
+            <hr>
+            <h4>المواد المستلمة</h4>
+            <div id="itemsContainer">
+                <div class="item-row row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">اسم المادة</label>
+                        <input type="text" class="form-control item-name" required>
+                        <div class="error-message item-name-error">يجب إدخال اسم المادة</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">الكمية</label>
+                        <input type="number" class="form-control item-quantity" required>
+                        <div class="error-message item-quantity-error">يجب إدخال الكمية</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">سعر الوحدة</label>
+                        <input type="number" step="0.01" class="form-control item-price" required>
+                        <div class="error-message item-price-error">يجب إدخال سعر الوحدة</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">الإجمالي</label>
+                        <input type="number" step="0.01" class="form-control item-total" readonly>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-item">حذف</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" id="addItem" class="btn btn-secondary mb-3">إضافة مادة</button>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">حفظ الفاتورة</button>
+            </div>
         </form>
-      </div>
-
-      <!-- تبويب عرض الفواتير -->
-      <div id="view-invoices" class="tab-content">
-        <label for="searchCompany">ابحث عن شركة:</label>
-        <input type="text" id="searchCompany" placeholder="اكتب اسم الشركة" />
-        <button id="searchBtn" class="secondary">
-          <i class="fas fa-search"></i> بحث
-        </button>
-
-        <div class="company-list" id="companyListContainer">
-          <!-- سيتم ملء هذا القسم بالبيانات -->
+        
+        <div id="successAlert" class="alert alert-success mt-3" style="display:none;">
+            تم حفظ الفاتورة بنجاح!
         </div>
-      </div>
-
-      <!-- تبويب التقارير -->
-      <div id="reports" class="tab-content">
-        <h3>تقارير المشتريات</h3>
-
-        <div class="report-actions">
-          <button id="currentMonthReport" class="secondary">
-            <i class="fas fa-file-alt"></i> تقرير الشهر الحالي
-          </button>
-          <button id="lastMonthReport" class="secondary">
-            <i class="fas fa-file-archive"></i> تقرير الشهر السابق
-          </button>
-        </div>
-
-        <div class="report-results" id="reportResults">
-          <!-- سيتم عرض نتائج التقارير هنا -->
-        </div>
-      </div>
     </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // عناصر DOM
-        const tabs = document.querySelectorAll(".tab");
-        const tabContents = document.querySelectorAll(".tab-content");
-        const form = document.getElementById("invoiceForm");
-        const responseMsg = document.getElementById("responseMsg");
-        const submitBtn = document.getElementById("submitBtn");
-        const quantityInput = document.getElementById("quantity");
-        const priceInput = document.getElementById("price");
-        const totalDisplay = document.getElementById("totalDisplay");
-        const searchBtn = document.getElementById("searchBtn");
-        const searchCompany = document.getElementById("searchCompany");
-        const companyListContainer = document.getElementById(
-          "companyListContainer"
-        );
-        const currentMonthReportBtn =
-          document.getElementById("currentMonthReport");
-        const lastMonthReportBtn = document.getElementById("lastMonthReport");
-        const reportResults = document.getElementById("reportResults");
-        const companyListDatalist = document.getElementById("companyList");
-
-        // عنوان سكربت جوجل
-        const scriptUrl =
-          "https://script.google.com/macros/s/AKfycbyDrLRLA1zaydrb6-ZvcrjDRZf66aaK-FggcQuqSO40CKkS8ihybJMT8pB8KFgLHICwVw/exec";
-
-        // تبديل التبويبات
-        tabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            tabs.forEach((t) => t.classList.remove("active"));
-            tab.classList.add("active");
-
-            const tabId = tab.getAttribute("data-tab");
-            tabContents.forEach((content) => {
-              content.classList.remove("active");
-              if (content.id === tabId) {
-                content.classList.add("active");
-              }
-            });
-
-            // إذا كان التبويب هو عرض الفواتير، جلب قائمة الشركات
-            if (tabId === "view-invoices") {
-              fetchCompanies();
-            }
-          });
-        });
-
-        // حساب الإجمالي
-        function calculateTotal() {
-          const quantity = parseFloat(quantityInput.value) || 0;
-          const price = parseFloat(priceInput.value) || 0;
-          const total = (quantity * price).toFixed(2);
-          totalDisplay.innerHTML = `<i class="fas fa-calculator"></i> الإجمالي: ${total}`;
-        }
-
-        quantityInput.addEventListener("input", calculateTotal);
-        priceInput.addEventListener("input", calculateTotal);
-
-        // إرسال الفاتورة
-        form.addEventListener("submit", async function (e) {
-          e.preventDefault();
-          submitBtn.disabled = true;
-          submitBtn.innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
-          responseMsg.className = "message loading";
-          responseMsg.textContent = "⏳ جاري معالجة الفاتورة...";
-
-          // تعيين تاريخ اليوم إذا لم يتم تحديد تاريخ
-          const dateInput = document.getElementById("date");
-          if (!dateInput.value) {
-            const today = new Date();
-            dateInput.value = today.toISOString().substr(0, 10);
-          }
-
-          const data = {
-            date: dateInput.value,
-            company: document.getElementById("company").value.trim(),
-            product: document.getElementById("product").value.trim(),
-            quantity: parseFloat(quantityInput.value),
-            price: parseFloat(priceInput.value),
-          };
-          data.total = data.quantity * data.price;
-
-          try {
-            const response = await fetch(scriptUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-              },
-              body: JSON.stringify(data),
-            });
-
-            const result = await response.text();
-
-            responseMsg.className = "message success";
-            responseMsg.innerHTML = `<i class="fas fa-check-circle"></i> ${result}`;
-            form.reset();
-            totalDisplay.innerHTML =
-              '<i class="fas fa-calculator"></i> الإجمالي: 0.00';
-
-            // تحديث قائمة الشركات
-            updateCompanyList();
-          } catch (error) {
-            console.error("Error:", error);
-            responseMsg.className = "message error";
-            responseMsg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${error.message}`;
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML =
-              '<i class="fas fa-paper-plane"></i> إرسال الفاتورة';
-          }
-        });
-
-        // جلب قائمة الشركات
-        async function fetchCompanies() {
-          try {
-            companyListContainer.innerHTML =
-              '<div class="message loading">جاري تحميل بيانات الشركات...</div>';
-
-            const response = await fetch(`${scriptUrl}?company=all`);
-            const companies = await response.json();
-
-            if (companies.error) {
-              throw new Error(companies.error);
-            }
-
-            updateCompanyList(companies);
-          } catch (error) {
-            companyListContainer.innerHTML = `<div class="message error">${error.message}</div>`;
-          }
-        }
-
-        // تحديث قائمة الشركات
-        function updateCompanyList(companies = null) {
-          if (!companies) {
-            fetchCompanies();
-            return;
-          }
-
-          if (companies.length === 0) {
-            companyListContainer.innerHTML =
-              '<div class="message">لا توجد شركات مسجلة</div>';
-            return;
-          }
-
-          let html = "";
-          const uniqueCompanies = [
-            ...new Set(companies.map((item) => item.company)),
-          ];
-
-          // تحديث datalist لأسماء الشركات
-          companyListDatalist.innerHTML = "";
-          uniqueCompanies.forEach((company) => {
-            companyListDatalist.innerHTML += `<option value="${company}">`;
-          });
-
-          uniqueCompanies.forEach((company) => {
-            const companyInvoices = companies.filter(
-              (inv) => inv.company === company
-            );
-            const total = companyInvoices.reduce(
-              (sum, inv) => sum + inv.total,
-              0
-            );
-
-            html += `
-              <div class="company-item" data-company="${company}">
-                <div class="company-name">${company}</div>
-                <div class="company-total">إجمالي المشتريات: ${total.toFixed(
-                  2
-                )}</div>
-                <div class="invoice-details" id="invoices-${company.replace(
-                  /\s+/g,
-                  "-"
-                )}">
-                  ${companyInvoices
-                    .map(
-                      (inv) => `
-                    <div class="invoice-item">
-                      <div><strong>التاريخ:</strong> ${inv.date}</div>
-                      <div><strong>المنتج:</strong> ${inv.product}</div>
-                      <div><strong>الكمية:</strong> ${inv.quantity}</div>
-                      <div><strong>السعر:</strong> ${inv.price.toFixed(2)}</div>
-                      <div><strong>الإجمالي:</strong> ${inv.total.toFixed(
-                        2
-                      )}</div>
-                    </div>
-                  `
-                    )
-                    .join("")}
-                </div>
-              </div>
-            `;
-          });
-
-          companyListContainer.innerHTML = html;
-
-          // إضافة حدث النقر لعرض التفاصيل
-          document.querySelectorAll(".company-item").forEach((item) => {
-            item.addEventListener("click", function () {
-              const company = this.getAttribute("data-company");
-              const detailsId = `invoices-${company.replace(/\s+/g, "-")}`;
-              const details = document.getElementById(detailsId);
-
-              if (details.style.display === "block") {
-                details.style.display = "none";
-              } else {
-                details.style.display = "block";
-              }
-            });
-          });
-        }
-
-        // بحث عن شركة
-        searchBtn.addEventListener("click", function () {
-          const searchTerm = searchCompany.value.trim().toLowerCase();
-          if (!searchTerm) {
-            fetchCompanies();
-            return;
-          }
-
-          const companyItems = document.querySelectorAll(".company-item");
-          companyItems.forEach((item) => {
-            const companyName = item.getAttribute("data-company").toLowerCase();
-            if (companyName.includes(searchTerm)) {
-              item.style.display = "block";
-            } else {
-              item.style.display = "none";
-            }
-          });
-        });
-
-        // تقرير الشهر الحالي
-        currentMonthReportBtn.addEventListener("click", async function () {
-          try {
-            reportResults.innerHTML =
-              '<div class="message loading">جاري إنشاء تقرير الشهر الحالي...</div>';
-
-            const response = await fetch(
-              `${scriptUrl}?action=current_month_report`
-            );
-            const result = await response.text();
-
-            reportResults.innerHTML = `<div class="message success">${result}</div>`;
-          } catch (error) {
-            reportResults.innerHTML = `<div class="message error">${error.message}</div>`;
-          }
-        });
-
-        // تقرير الشهر السابق
-        lastMonthReportBtn.addEventListener("click", async function () {
-          try {
-            reportResults.innerHTML =
-              '<div class="message loading">جاري إنشاء تقرير الشهر السابق...</div>';
-
-            const response = await fetch(
-              `${scriptUrl}?action=last_month_report`
-            );
-            const result = await response.text();
-
-            reportResults.innerHTML = `<div class="message success">${result}</div>`;
-          } catch (error) {
-            reportResults.innerHTML = `<div class="message error">${error.message}</div>`;
-          }
-        });
-
-        // جلب قائمة الشركات عند التحميل
-        updateCompanyList();
-      });
-    </script>
-  </body>
+    <script src="app.js"></script>
+</body>
 </html>
