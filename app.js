@@ -1,13 +1,5 @@
 // تهيئة Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyAEC782OWjcyI7uAcJ2oOvgFwav9jiThNg",
-  authDomain: "new22-44c31.firebaseapp.com",
-  databaseURL: "https://new22-44c31-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "new22-44c31",
-  storageBucket: "new22-44c31.firebasestorage.app",
-  messagingSenderId: "335133543637",
-  appId: "1:335133543637:web:ddba6ee5cb6c0f48fba65c"
-};
+
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -45,8 +37,7 @@ invoiceForm.addEventListener('submit', async function(e) {
         const invoiceData = prepareInvoiceData();
         
         try {
-            // حفظ في Firebase
-            await saveToFirebase(invoiceData);
+            // حفظ في Firebas
             
             // إرسال إلى Google Script
             await sendToGoogleScript(invoiceData);
