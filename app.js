@@ -1,10 +1,3 @@
-// تهيئة Firebase
-
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 // متغيرات DOM
 const invoiceForm = document.getElementById('invoiceForm');
 const itemsContainer = document.getElementById('itemsContainer');
@@ -37,8 +30,6 @@ invoiceForm.addEventListener('submit', async function(e) {
         const invoiceData = prepareInvoiceData();
         
         try {
-            // حفظ في Firebas
-            
             // إرسال إلى Google Script
             await sendToGoogleScript(invoiceData);
             
@@ -176,16 +167,12 @@ function prepareInvoiceData() {
         supplier,
         totalAmount,
         items,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: new Date().toISOString()
     };
 }
 
-async function saveToFirebase(data) {
-    await db.collection('invoices').add(data);
-}
-
 async function sendToGoogleScript(data) {
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwLI1N4DDHPU0vlBG8mnk4-BONKWBLFtahXa2bviZJu4s_8Idp_bLIK0qenq60VtzNi/exec';
+    const scriptUrl = 'YOUR_GOOGLE_SCRIPT_URL'; // ← ضع هنا رابط Google Apps Script
     
     const response = await fetch(scriptUrl, {
         method: 'POST',
@@ -196,7 +183,7 @@ async function sendToGoogleScript(data) {
     });
     
     if (!response.ok) {
-        throw new Error('Failed to send data to Google Sheets');
+        throw new Error('فشل في إرسال البيانات إلى Google Sheets');
     }
 }
 
