@@ -194,7 +194,7 @@ async function saveToFirebase(data) {
 }
 
 async function sendToGoogleScript(data) {
-    const scriptUrl = 'YOUR_GOOGLE_SCRIPT_URL';
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwLI1N4DDHPU0vlBG8mnk4-BONKWBLFtahXa2bviZJu4s_8Idp_bLIK0qenq60VtzNi/exec';
     
     const response = await fetch(scriptUrl, {
         method: 'POST',
