@@ -172,7 +172,7 @@ function prepareInvoiceData() {
 }
 
 async function sendToGoogleScript(data) {
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzRCVUdw-UDL58JO7FKYU0gR4o24EoZY8PtdKLy0dM/dev'; // ← ضع هنا رابط Google Apps Script
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwLI1N4DDHPU0vlBG8mnk4-BONKWBLFtahXa2bviZJu4s_8Idp_bLIK0qenq60VtzNi/exec'; // ← ضع هنا رابط Google Apps Script
     
     const response = await fetch(scriptUrl, {
         method: 'POST',
