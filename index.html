@@ -1,96 +1,107 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدخال الفواتير</title>
-    <!-- Bootstrap RTL -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تسجيل الفواتير</title>
     <style>
-        .error-message {
-            color: red;
-            font-size: 0.8rem;
-            display: none;
-        }
+      body {
+        font-family: Arial;
+        padding: 20px;
+        background: #f9f9f9;
+      }
+      form {
+        max-width: 500px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      input,
+      textarea,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+      }
+      .success {
+        color: green;
+        text-align: center;
+        margin-top: 15px;
+      }
     </style>
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">نظام إدخال الفواتير</h1>
-        
-        <form id="invoiceForm" class="needs-validation" novalidate>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="invoiceNumber" class="form-label">رقم الفاتورة</label>
-                    <input type="text" class="form-control" id="invoiceNumber" required>
-                    <div class="error-message" id="invoiceNumberError">يجب إدخال رقم الفاتورة</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="invoiceDate" class="form-label">تاريخ الفاتورة</label>
-                    <input type="date" class="form-control" id="invoiceDate" required>
-                    <div class="error-message" id="invoiceDateError">يجب إدخال تاريخ الفاتورة</div>
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="supplier" class="form-label">المورد</label>
-                    <select class="form-select" id="supplier" required>
-                        <option value="">اختر المورد</option>
-                        <option value="supplier1">مورد 1</option>
-                        <option value="supplier2">مورد 2</option>
-                    </select>
-                    <div class="error-message" id="supplierError">يجب اختيار المورد</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="totalAmount" class="form-label">المبلغ الإجمالي</label>
-                    <input type="number" class="form-control" id="totalAmount" step="0.01" required>
-                    <div class="error-message" id="totalAmountError">يجب إدخال المبلغ الإجمالي</div>
-                </div>
-            </div>
-            
-            <hr>
-            <h4>المواد المستلمة</h4>
-            <div id="itemsContainer">
-                <div class="item-row row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">اسم المادة</label>
-                        <input type="text" class="form-control item-name" required>
-                        <div class="error-message item-name-error">يجب إدخال اسم المادة</div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">الكمية</label>
-                        <input type="number" class="form-control item-quantity" required>
-                        <div class="error-message item-quantity-error">يجب إدخال الكمية</div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">سعر الوحدة</label>
-                        <input type="number" step="0.01" class="form-control item-price" required>
-                        <div class="error-message item-price-error">يجب إدخال سعر الوحدة</div>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">الإجمالي</label>
-                        <input type="number" step="0.01" class="form-control item-total" readonly>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger remove-item">حذف</button>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="button" id="addItem" class="btn btn-secondary mb-3">إضافة مادة</button>
-            
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">حفظ الفاتورة</button>
-            </div>
-        </form>
-        
-        <div id="successAlert" class="alert alert-success mt-3" style="display:none;">
-            تم حفظ الفاتورة بنجاح!
-        </div>
-    </div>
+  </head>
+  <body>
+    <h2 style="text-align: center">نموذج تسجيل الفواتير</h2>
 
-    <script src="app.js"></script>
-</body>
+    <form id="invoiceForm">
+      <input
+        type="text"
+        name="invoiceNumber"
+        placeholder="رقم الفاتورة"
+        required
+      />
+      <input type="date" name="invoiceDate" required />
+      <input type="text" name="supplier" placeholder="اسم المورد" required />
+      <input
+        type="number"
+        name="totalAmount"
+        placeholder="إجمالي المبلغ"
+        required
+      />
+      <textarea
+        name="items"
+        placeholder="تفاصيل الأصناف (مثال: صنف - كمية - سعر)"
+        required
+      ></textarea>
+      <button type="submit">إرسال الفاتورة</button>
+      <div class="success" id="successMsg"></div>
+    </form>
+
+    <script>
+      const form = document.getElementById("invoiceForm");
+      const successMsg = document.getElementById("successMsg");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+          invoiceNumber: form.invoiceNumber.value,
+          invoiceDate: form.invoiceDate.value,
+          supplier: form.supplier.value,
+          totalAmount: form.totalAmount.value,
+          items: form.items.value,
+        };
+
+        try {
+          const response = await fetch(
+            "https://script.google.com/macros/s/AKfycbzswX6BzAMroRsgURcQlPs-_TBKJTYmcks17CbAdGTy5hDzA19mC742MMSTMDr7IK48/exec",
+            {
+              method: "POST",
+              body: JSON.stringify(data),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const result = await response.json();
+          if (result.status === "success") {
+            successMsg.textContent = "✅ تم حفظ الفاتورة بنجاح";
+            form.reset();
+          } else {
+            successMsg.textContent = "حدث خطأ أثناء الحفظ!";
+          }
+        } catch (err) {
+          successMsg.textContent = "❌ فشل الاتصال بالخادم";
+        }
+      });
+    </script>
+  </body>
 </html>
