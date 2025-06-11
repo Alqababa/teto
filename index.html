@@ -2,104 +2,95 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <title>نموذج تسجيل الفواتير</title>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نظام إدخال الفواتير</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
+    />
     <style>
-      body {
-        font-family: sans-serif;
-        padding: 20px;
-        background: #f8f9fa;
+      .error-message {
+        color: red;
+        font-size: 0.8rem;
+        display: none;
       }
-      form {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        max-width: 500px;
-        margin: auto;
-        box-shadow: 0 0 10px #ccc;
-      }
-      input,
-      textarea,
-      button {
-        width: 100%;
-        margin: 10px 0;
+
+      .item-row {
+        border: 1px solid #e0e0e0;
         padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
       }
-      button {
-        background: green;
-        color: white;
-        border: none;
-        border-radius: 4px;
+
+      .item-row input {
+        margin-bottom: 5px;
       }
-      .msg {
-        text-align: center;
-        color: green;
-        margin-top: 10px;
+
+      .remove-item {
+        margin-top: 30px;
+      }
+
+      #totalAmount {
+        font-size: 1.2rem;
+        color: #2c3e50;
       }
     </style>
   </head>
   <body>
-    <h2 style="text-align: center">تسجيل الفاتورة</h2>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">📋 نظام تسجيل الفواتير</h1>
 
-    <form id="invoiceForm">
-      <input id="invoiceNumber" placeholder="رقم الفاتورة" required />
-      <input id="invoiceDate" type="date" required />
-      <input id="supplier" placeholder="اسم المورد" required />
-      <input
-        id="totalAmount"
-        type="number"
-        placeholder="إجمالي المبلغ"
-        required
-      />
-      <textarea
-        id="items"
-        placeholder="تفاصيل الأصناف (مثال: منتج - كمية - سعر)"
-        required
-      ></textarea>
-      <button type="submit">حفظ الفاتورة</button>
-      <div class="msg" id="message"></div>
-    </form>
+      <form id="invoiceForm">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">رقم الفاتورة</label>
+            <input type="text" class="form-control" id="invoiceNumber" required />
+            <div class="error-message" id="invoiceNumberError">يجب إدخال رقم الفاتورة</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">تاريخ الفاتورة</label>
+            <input type="date" class="form-control" id="invoiceDate" required />
+            <div class="error-message" id="invoiceDateError">يجب إدخال تاريخ الفاتورة</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">اسم المورد</label>
+            <input type="text" class="form-control" id="supplier" required />
+            <div class="error-message" id="supplierError">يجب إدخال اسم المورد</div>
+          </div>
+        </div>
 
-    <script>
-      // إعداد Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
-        authDomain: "invoices-a26f7.firebaseapp.com",
-        projectId: "invoices-a26f7",
-        storageBucket: "invoices-a26f7.firebasestorage.app",
-        messagingSenderId: "104648548938",
-        appId: "1:104648548938:web:7631ae5941fc3c20ab3cb3",
-      };
+        <h5 class="mb-3">تفاصيل المواد</h5>
+        <div id="itemsContainer" class="mb-3">
+          <!-- يتم إدخال الأصناف هنا تلقائيًا -->
+        </div>
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+        <button type="button" id="addItemBtn" class="btn btn-secondary mb-3">
+          ➕ إضافة مادة
+        </button>
 
-      document
-        .getElementById("invoiceForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const data = {
-            invoiceNumber: document.getElementById("invoiceNumber").value,
-            invoiceDate: document.getElementById("invoiceDate").value,
-            supplier: document.getElementById("supplier").value,
-            totalAmount: parseFloat(
-              document.getElementById("totalAmount").value
-            ),
-            items: document.getElementById("items").value,
-            createdAt: new Date().toISOString(),
-          };
+        <div class="row mb-3">
+          <div class="col-md-6 fw-bold">
+            المجموع: <span id="totalAmount">0.00</span> ر.س
+          </div>
+        </div>
 
-          try {
-            await db.collection("invoices").add(data);
-            document.getElementById("message").textContent =
-              "✅ تم حفظ الفاتورة";
-            document.getElementById("invoiceForm").reset();
-          } catch (err) {
-            document.getElementById("message").textContent = "❌ حدث خطأ";
-            console.error(err);
-          }
-        });
-    </script>
+        <!-- حقل خفي يحمل قيمة المجموع الإجمالي -->
+        <input type="hidden" id="totalAmountInput" name="totalAmountInput" />
+
+        <div class="d-grid gap-2 mb-3">
+          <button type="submit" class="btn btn-primary btn-lg">💾 حفظ الفاتورة</button>
+        </div>
+      </form>
+
+      <div id="successAlert" class="alert alert-success mt-3" style="display: none">
+        ✅ تم حفظ الفاتورة بنجاح!
+      </div>
+    </div>
+
+    <!-- Firebase (Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>
