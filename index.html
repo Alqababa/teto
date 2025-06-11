@@ -2,98 +2,104 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>تسجيل الفواتير</title>
+    <title>نموذج تسجيل الفواتير</title>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
       body {
-        font-family: Arial;
+        font-family: sans-serif;
         padding: 20px;
-        background: #f9f9f9;
+        background: #f8f9fa;
       }
       form {
-        max-width: 500px;
-        margin: auto;
         background: white;
         padding: 20px;
-        border-radius: 10px;
+        border-radius: 8px;
+        max-width: 500px;
+        margin: auto;
+        box-shadow: 0 0 10px #ccc;
       }
       input,
       textarea,
       button {
         width: 100%;
-        padding: 10px;
         margin: 10px 0;
+        padding: 10px;
       }
       button {
-        background: #007bff;
+        background: green;
         color: white;
         border: none;
-        border-radius: 5px;
+        border-radius: 4px;
       }
-      .success {
-        color: green;
+      .msg {
         text-align: center;
-        margin-top: 15px;
+        color: green;
+        margin-top: 10px;
       }
     </style>
   </head>
   <body>
-    <h2 style="text-align: center">نموذج 22 تسجيل الفواتير</h2>
+    <h2 style="text-align: center">تسجيل الفاتورة</h2>
 
     <form id="invoiceForm">
+      <input id="invoiceNumber" placeholder="رقم الفاتورة" required />
+      <input id="invoiceDate" type="date" required />
+      <input id="supplier" placeholder="اسم المورد" required />
       <input
-        type="text"
-        name="invoiceNumber"
-        placeholder="رقم الفاتورة"
-        required
-      />
-      <input type="date" name="invoiceDate" required />
-      <input type="text" name="supplier" placeholder="اسم المورد" required />
-      <input
+        id="totalAmount"
         type="number"
-        name="totalAmount"
         placeholder="إجمالي المبلغ"
         required
       />
       <textarea
-        name="items"
-        placeholder="تفاصيل الأصناف (مثال: صنف - كمية - سعر)"
+        id="items"
+        placeholder="تفاصيل الأصناف (مثال: منتج - كمية - سعر)"
         required
       ></textarea>
-      <button type="submit">إرسال الفاتورة</button>
-      <div class="success" id="successMsg"></div>
+      <button type="submit">حفظ الفاتورة</button>
+      <div class="msg" id="message"></div>
     </form>
 
     <script>
-  const form = document.getElementById('invoiceForm');
-  const successMsg = document.getElementById('successMsg');
+      // إعداد Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
+        authDomain: "invoices-a26f7.firebaseapp.com",
+        projectId: "invoices-a26f7",
+        storageBucket: "invoices-a26f7.firebasestorage.app",
+        messagingSenderId: "104648548938",
+        appId: "1:104648548938:web:7631ae5941fc3c20ab3cb3",
+      };
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-    const params = new URLSearchParams({
-      invoiceNumber: form.invoiceNumber.value,
-      invoiceDate: form.invoiceDate.value,
-      supplier: form.supplier.value,
-      totalAmount: form.totalAmount.value,
-      items: form.items.value
-    });
+      document
+        .getElementById("invoiceForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const data = {
+            invoiceNumber: document.getElementById("invoiceNumber").value,
+            invoiceDate: document.getElementById("invoiceDate").value,
+            supplier: document.getElementById("supplier").value,
+            totalAmount: parseFloat(
+              document.getElementById("totalAmount").value
+            ),
+            items: document.getElementById("items").value,
+            createdAt: new Date().toISOString(),
+          };
 
-    try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycby_7uC692B8rj7q1kNSW9H7e-2ocrdlrzBzZZU1SlPXp8pOJoFR1wgyRyDBMe88ku_5/exec?" + params.toString());
-
-      const result = await response.json();
-      if (result.status === "success") {
-        successMsg.textContent = "✅ تم حفظ الفاتورة بنجاح";
-        form.reset();
-      } else {
-        successMsg.textContent = "❌ حدث خطأ أثناء الحفظ!";
-      }
-    } catch (err) {
-      successMsg.textContent = "❌ فشل الاتصال بالخادم";
-    }
-  });
-</script>
-
+          try {
+            await db.collection("invoices").add(data);
+            document.getElementById("message").textContent =
+              "✅ تم حفظ الفاتورة";
+            document.getElementById("invoiceForm").reset();
+          } catch (err) {
+            document.getElementById("message").textContent = "❌ حدث خطأ";
+            console.error(err);
+          }
+        });
+    </script>
   </body>
 </html>
