@@ -195,7 +195,7 @@ function prepareInvoiceData() {
 }
 
 async function syncWithGoogleSheets(data) {
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycby_7uC692B8rj7q1kNSW9H7e-2ocrdlrzBzZZU1SlPXp8pOJoFR1wgyRyDBMe88ku_5/exec';
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbxk1eHKTIOu83nxcp4AhWDj3m_twQO6PkWVhAw5RnUcEcZnAuv3U4fidWH5gIVrtIY/exec';
   
 
   
