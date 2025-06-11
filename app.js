@@ -102,24 +102,46 @@ function exportTableToPDF(tableId) {
 }
 
 // تقارير المورد
+// تقارير المورد (إجمالي فقط)
 async function getSupplierReport() {
   const supplierName = document.getElementById("supplierNameFilter").value.toLowerCase();
   const snapshot = await db.collection("invoices").get();
   let totalSum = 0;
-  let html = `<table id="supplierTable" class='table table-bordered'><thead><tr><th>المورد</th><th>التاريخ</th><th>المجموع</th></tr></thead><tbody>`;
+  let count = 0;
+  let supplierLabel = "";
+
   snapshot.forEach(doc => {
     const d = doc.data();
     if (d.supplier && d.supplier.toLowerCase().includes(supplierName)) {
       totalSum += d.totalAmount;
-      html += `<tr><td>${d.supplier}</td><td>${d.invoiceDate}</td><td>${d.totalAmount.toFixed(2)} AED</td></tr>`;
+      count++;
+      supplierLabel = d.supplier; // اسم المورد الصحيح بالحروف الكبيرة
     }
   });
-  html += `</tbody></table>`;
-  html += `<div class='mt-3 alert alert-info fw-bold'>إجمالي الفواتير: ${totalSum.toFixed(2)} AED</div>`;
+
+  let html = `<table id="supplierTable" class='table table-bordered'>
+    <thead>
+      <tr>
+        <th>اسم المورد</th>
+        <th>عدد الفواتير</th>
+        <th>إجمالي المبلغ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${supplierLabel || "غير معروف"}</td>
+        <td>${count}</td>
+        <td>${totalSum.toFixed(2)} AED</td>
+      </tr>
+    </tbody>
+  </table>`;
+
   html += `<button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('supplierTable')">📥 تصدير Excel</button>`;
   html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('supplierTable')">📄 تصدير PDF</button>`;
+
   document.getElementById("supplierResults").innerHTML = html;
 }
+
 
 // تقرير المصاريف الشهرية
 async function generateMonthlyReport() {
