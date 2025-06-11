@@ -2,7 +2,7 @@
 
 // إعداد Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
+ apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
   authDomain: "invoices-a26f7.firebaseapp.com",
   projectId: "invoices-a26f7",
   storageBucket: "invoices-a26f7.firebasestorage.app",
@@ -86,18 +86,38 @@ function updateTotal() {
   document.getElementById("totalAmountInput").value = total.toFixed(2);
 }
 
+// تصدير جدول إلى Excel
+function exportTableToExcel(tableId, filename = '') {
+  const table = document.getElementById(tableId);
+  const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+  XLSX.writeFile(wb, filename || 'تقرير.xlsx');
+}
+
+// تصدير جدول إلى PDF
+function exportTableToPDF(tableId) {
+  const table = document.getElementById(tableId);
+  const doc = new jspdf.jsPDF('p', 'pt', 'a4');
+  doc.autoTable({ html: table });
+  doc.save('تقرير.pdf');
+}
+
 // تقارير المورد
 async function getSupplierReport() {
   const supplierName = document.getElementById("supplierNameFilter").value.toLowerCase();
   const snapshot = await db.collection("invoices").get();
-  let html = `<table class='table table-bordered'><thead><tr><th>المورد</th><th>التاريخ</th><th>المجموع</th></tr></thead><tbody>`;
+  let totalSum = 0;
+  let html = `<table id="supplierTable" class='table table-bordered'><thead><tr><th>المورد</th><th>التاريخ</th><th>المجموع</th></tr></thead><tbody>`;
   snapshot.forEach(doc => {
     const d = doc.data();
     if (d.supplier && d.supplier.toLowerCase().includes(supplierName)) {
+      totalSum += d.totalAmount;
       html += `<tr><td>${d.supplier}</td><td>${d.invoiceDate}</td><td>${d.totalAmount.toFixed(2)} AED</td></tr>`;
     }
   });
   html += `</tbody></table>`;
+  html += `<div class='mt-3 alert alert-info fw-bold'>إجمالي الفواتير: ${totalSum.toFixed(2)} AED</div>`;
+  html += `<button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('supplierTable')">📥 تصدير Excel</button>`;
+  html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('supplierTable')">📄 تصدير PDF</button>`;
   document.getElementById("supplierResults").innerHTML = html;
 }
 
@@ -120,10 +140,12 @@ async function generateMonthlyReport() {
     }
   });
 
-  let html = `<table class='table table-striped'><thead><tr><th>اليوم</th><th>المجموع (AED)</th></tr></thead><tbody>`;
+  let html = `<table id="monthlyTable" class='table table-striped'><thead><tr><th>اليوم</th><th>المجموع (AED)</th></tr></thead><tbody>`;
   for (const day in summary) {
     html += `<tr><td>${day}</td><td>${summary[day].toFixed(2)}</td></tr>`;
   }
   html += `</tbody></table>`;
+  html += `<button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('monthlyTable')">📥 تصدير Excel</button>`;
+  html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('monthlyTable')">📄 تصدير PDF</button>`;
   document.getElementById("monthlyResults").innerHTML = html;
 }
