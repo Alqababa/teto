@@ -2,7 +2,7 @@
 
 // إعداد Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
+ apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
   authDomain: "invoices-a26f7.firebaseapp.com",
   projectId: "invoices-a26f7",
   storageBucket: "invoices-a26f7.firebasestorage.app",
@@ -101,7 +101,7 @@ function exportTableToPDF(tableId) {
   doc.save('تقرير.pdf');
 }
 
-// تقارير المورد (عرض مورد واحد كمجموع فقط + اختيار شهر)
+// تقارير المورد (عرض مورد واحد كمجموع فقط + اختيار شهر + زر عرض الكل)
 async function getSupplierReport() {
   const supplierName = document.getElementById("supplierNameFilter").value.toLowerCase();
   const selectedMonth = document.getElementById("supplierMonthFilter").value; // صيغة YYYY-MM
@@ -126,7 +126,11 @@ async function getSupplierReport() {
     }
   });
 
-  let html = `<table id="supplierTable" class='table table-bordered'>
+  let html = `<label for="supplierMonthFilter">الشهر:</label>
+  <input type="month" id="supplierMonthFilter" class="form-control mb-2" onchange="getSupplierReport()" />
+  <button class="btn btn-secondary mb-2" onclick="document.getElementById('supplierMonthFilter').value = ''; getSupplierReport();">عرض الكل</button>
+
+  <table id="supplierTable" class='table table-bordered'>
     <thead>
       <tr>
         <th>اسم المورد</th>
