@@ -1,1 +1,113 @@
-<!-- محتوى index.html النهائي سيكون هنا بعد التعديلات -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نظام 22 إدخال الفواتير</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
+    />
+    <style>
+      .error-message {
+        color: red;
+        font-size: 0.8rem;
+        display: none;
+      }
+
+      .item-row {
+        border: 1px solid #e0e0e0;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+      }
+
+      .item-row input {
+        margin-bottom: 5px;
+      }
+
+      .remove-item {
+        margin-top: 30px;
+      }
+
+      #totalAmount {
+        font-size: 1.2rem;
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">📋 نظام تسجيل الفواتير</h1>
+
+      <form id="invoiceForm">
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">رقم الفاتورة</label>
+            <input
+              type="text"
+              class="form-control"
+              id="invoiceNumber"
+              required
+            />
+            <div class="error-message" id="invoiceNumberError">
+              يجب إدخال رقم الفاتورة
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">تاريخ الفاتورة</label>
+            <input type="date" class="form-control" id="invoiceDate" required />
+            <div class="error-message" id="invoiceDateError">
+              يجب إدخال تاريخ الفاتورة
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">اسم المورد</label>
+            <input type="text" class="form-control" id="supplier" required />
+            <div class="error-message" id="supplierError">
+              يجب إدخال اسم المورد
+            </div>
+          </div>
+        </div>
+
+        <h5 class="mb-3">تفاصيل المواد</h5>
+        <div id="itemsContainer" class="mb-3">
+          <!-- يتم إدخال الأصناف هنا تلقائيًا -->
+        </div>
+
+        <button type="button" id="addItemBtn" class="btn btn-secondary mb-3">
+          ➕ إضافة مادة
+        </button>
+
+        <div class="row mb-3">
+          <div class="col-md-6 fw-bold">
+            المجموع: <span id="totalAmount">0.00</span> ر.س
+          </div>
+        </div>
+
+        <!-- حقل خفي يحمل قيمة المجموع الإجمالي -->
+        <input type="hidden" id="totalAmountInput" name="totalAmountInput" />
+
+        <div class="d-grid gap-2 mb-3">
+          <button type="submit" class="btn btn-primary btn-lg">
+            💾 حفظ الفاتورة
+          </button>
+        </div>
+      </form>
+
+      <div
+        id="successAlert"
+        class="alert alert-success mt-3"
+        style="display: none"
+      >
+        ✅ تم حفظ الفاتورة بنجاح!
+      </div>
+    </div>
+
+    <!-- Firebase (Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
