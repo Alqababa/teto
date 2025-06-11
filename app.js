@@ -2,7 +2,7 @@
 
 // إعداد Firebase
 const firebaseConfig = {
- apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
+  apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
   authDomain: "invoices-a26f7.firebaseapp.com",
   projectId: "invoices-a26f7",
   storageBucket: "invoices-a26f7.firebasestorage.app",
@@ -101,34 +101,41 @@ function exportTableToPDF(tableId) {
   doc.save('تقرير.pdf');
 }
 
-// تقارير المورد (عرض مورد واحد كمجموع فقط + اختيار شهر + زر عرض الكل)
+// تقارير المورد (عرض جميع الموردين مع مجموع فواتيرهم + تصفية حسب الشهر)
 async function getSupplierReport() {
   const supplierName = document.getElementById("supplierNameFilter").value.toLowerCase();
-  const selectedMonth = document.getElementById("supplierMonthFilter").value; // صيغة YYYY-MM
+  const selectedMonth = document.getElementById("supplierMonthFilter")?.value; // صيغة YYYY-MM
 
   const snapshot = await db.collection("invoices").get();
-  let totalSum = 0;
-  let count = 0;
-  let supplierLabel = "";
+  const suppliers = {};
 
   snapshot.forEach(doc => {
     const d = doc.data();
     const invoiceMonth = new Date(d.invoiceDate);
     const invoiceMonthStr = `${invoiceMonth.getFullYear()}-${String(invoiceMonth.getMonth() + 1).padStart(2, '0')}`;
 
-    if (
-      d.supplier && d.supplier.toLowerCase().includes(supplierName) &&
-      (!selectedMonth || invoiceMonthStr === selectedMonth)
-    ) {
-      totalSum += d.totalAmount;
-      count++;
-      supplierLabel = d.supplier;
+    // إذا كان هناك تصفية بالشهر وتطابق اسم المورد (إن وجد)
+    if ((!selectedMonth || invoiceMonthStr === selectedMonth) && 
+        (!supplierName || (d.supplier && d.supplier.toLowerCase().includes(supplierName)))) {
+      const supplierKey = d.supplier || "غير معروف";
+      if (!suppliers[supplierKey]) {
+        suppliers[supplierKey] = {
+          count: 0,
+          total: 0,
+          invoices: []
+        };
+      }
+      suppliers[supplierKey].count++;
+      suppliers[supplierKey].total += d.totalAmount || 0;
+      suppliers[supplierKey].invoices.push(d);
     }
   });
 
-  let html = `<label for="supplierMonthFilter">الشهر:</label>
-  <input type="month" id="supplierMonthFilter" class="form-control mb-2" onchange="getSupplierReport()" />
-  <button class="btn btn-secondary mb-2" onclick="document.getElementById('supplierMonthFilter').value = ''; getSupplierReport();">عرض الكل</button>
+  let html = `<div class="mb-3">
+    <label for="supplierMonthFilter">الشهر:</label>
+    <input type="month" id="supplierMonthFilter" class="form-control mb-2" onchange="getSupplierReport()" />
+    <button class="btn btn-secondary mb-2" onclick="document.getElementById('supplierMonthFilter').value = ''; getSupplierReport();">عرض الكل</button>
+  </div>
 
   <table id="supplierTable" class='table table-bordered'>
     <thead>
@@ -136,19 +143,163 @@ async function getSupplierReport() {
         <th>اسم المورد</th>
         <th>عدد الفواتير</th>
         <th>إجمالي المبلغ</th>
+        <th>تفاصيل</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td>${supplierLabel || "غير معروف"}</td>
-        <td>${count}</td>
-        <td>${totalSum.toFixed(2)} AED</td>
-      </tr>
-    </tbody>
-  </table>`;
+    <tbody>`;
 
-  html += `<button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('supplierTable')">📥 تصدير Excel</button>`;
-  html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('supplierTable')">📄 تصدير PDF</button>`;
+  // فرز الموردين حسب مجموع الفواتير (من الأكبر إلى الأصغر)
+  const sortedSuppliers = Object.entries(suppliers).sort((a, b) => b[1].total - a[1].total);
+
+  if (sortedSuppliers.length === 0) {
+    html += `<tr><td colspan="4" class="text-center">لا توجد فواتير مطابقة للبحث</td></tr>`;
+  } else {
+    sortedSuppliers.forEach(([supplier, data]) => {
+      html += `
+        <tr>
+          <td>${supplier}</td>
+          <td>${data.count}</td>
+          <td>${data.total.toFixed(2)} AED</td>
+          <td><button class="btn btn-sm btn-info" onclick="showSupplierDetails('${supplier.replace(/'/g, "\\'")}')">عرض التفاصيل</button></td>
+        </tr>`;
+    });
+  }
+
+  html += `</tbody></table>`;
+
+  html += `<div class="mt-3">
+    <button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('supplierTable')">📥 تصدير Excel</button>
+    <button class='btn btn-outline-danger' onclick="exportTableToPDF('supplierTable')">📄 تصدير PDF</button>
+  </div>`;
 
   document.getElementById("supplierResults").innerHTML = html;
+}
+
+// عرض تفاصيل فواتير مورد معين
+async function showSupplierDetails(supplierName) {
+  const selectedMonth = document.getElementById("supplierMonthFilter")?.value;
+  
+  const snapshot = await db.collection("invoices").where("supplier", "==", supplierName).get();
+  let detailsHtml = `<div class="mb-3">
+    <button class="btn btn-secondary" onclick="getSupplierReport()">← العودة للقائمة</button>
+  </div>
+  <h4 class="mb-3">تفاصيل فواتير المورد: ${supplierName}</h4>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>تاريخ الفاتورة</th>
+          <th>الملاحظات</th>
+          <th>عدد المواد</th>
+          <th>المجموع</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  
+  let totalSum = 0;
+  let count = 0;
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    const invoiceMonth = new Date(d.invoiceDate);
+    const invoiceMonthStr = `${invoiceMonth.getFullYear()}-${String(invoiceMonth.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!selectedMonth || invoiceMonthStr === selectedMonth) {
+      detailsHtml += `
+        <tr>
+          <td>${d.invoiceDate}</td>
+          <td>${d.notes || '-'}</td>
+          <td>${d.items.length}</td>
+          <td>${(d.totalAmount || 0).toFixed(2)} AED</td>
+        </tr>`;
+      totalSum += d.totalAmount || 0;
+      count++;
+    }
+  });
+
+  detailsHtml += `
+      </tbody>
+      <tfoot>
+        <tr class="table-info">
+          <td colspan="2"><strong>المجموع</strong></td>
+          <td>${count}</td>
+          <td>${totalSum.toFixed(2)} AED</td>
+        </tr>
+      </tfoot>
+    </table>`;
+  
+  document.getElementById("supplierResults").innerHTML = detailsHtml;
+}
+
+// تقرير المصاريف الشهرية
+async function generateMonthlyReport() {
+  const selectedMonth = document.getElementById("monthInput").value;
+  
+  if (!selectedMonth) {
+    alert("الرجاء اختيار شهر");
+    return;
+  }
+
+  const snapshot = await db.collection("invoices").get();
+  const monthlyData = {};
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    const invoiceMonth = new Date(d.invoiceDate);
+    const invoiceMonthStr = `${invoiceMonth.getFullYear()}-${String(invoiceMonth.getMonth() + 1).padStart(2, '0')}`;
+
+    if (invoiceMonthStr === selectedMonth) {
+      const supplier = d.supplier || "غير معروف";
+      if (!monthlyData[supplier]) {
+        monthlyData[supplier] = {
+          count: 0,
+          total: 0
+        };
+      }
+      monthlyData[supplier].count++;
+      monthlyData[supplier].total += d.totalAmount || 0;
+    }
+  });
+
+  let html = `<h4 class="mb-3">تقرير مصاريف شهر ${selectedMonth}</h4>
+    <table id="monthlyTable" class="table table-bordered">
+      <thead>
+        <tr>
+          <th>اسم المورد</th>
+          <th>عدد الفواتير</th>
+          <th>إجمالي المبلغ</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  const sortedData = Object.entries(monthlyData).sort((a, b) => b[1].total - a[1].total);
+  let grandTotal = 0;
+  let invoiceCount = 0;
+
+  sortedData.forEach(([supplier, data]) => {
+    html += `
+      <tr>
+        <td>${supplier}</td>
+        <td>${data.count}</td>
+        <td>${data.total.toFixed(2)} AED</td>
+      </tr>`;
+    grandTotal += data.total;
+    invoiceCount += data.count;
+  });
+
+  html += `
+      </tbody>
+      <tfoot>
+        <tr class="table-info">
+          <td><strong>المجموع الكلي</strong></td>
+          <td>${invoiceCount}</td>
+          <td>${grandTotal.toFixed(2)} AED</td>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="mt-3">
+      <button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('monthlyTable')">📥 تصدير Excel</button>
+      <button class='btn btn-outline-danger' onclick="exportTableToPDF('monthlyTable')">📄 تصدير PDF</button>
+    </div>`;
+
+  document.getElementById("monthlyResults").innerHTML = html;
 }
