@@ -2,7 +2,7 @@
 
 // إعداد Firebase
 const firebaseConfig = {
- apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
+  apiKey: "AIzaSyDDy_qWmMa1qWyz2C50h0SFd25ZN6Re6N0",
   authDomain: "invoices-a26f7.firebaseapp.com",
   projectId: "invoices-a26f7",
   storageBucket: "invoices-a26f7.firebasestorage.app",
@@ -101,10 +101,11 @@ function exportTableToPDF(tableId) {
   doc.save('تقرير.pdf');
 }
 
-// تقارير المورد
-// تقارير المورد (إجمالي فقط)
+// تقارير المورد (عرض مورد واحد كمجموع فقط + اختيار شهر)
 async function getSupplierReport() {
   const supplierName = document.getElementById("supplierNameFilter").value.toLowerCase();
+  const selectedMonth = document.getElementById("supplierMonthFilter").value; // صيغة YYYY-MM
+
   const snapshot = await db.collection("invoices").get();
   let totalSum = 0;
   let count = 0;
@@ -112,10 +113,16 @@ async function getSupplierReport() {
 
   snapshot.forEach(doc => {
     const d = doc.data();
-    if (d.supplier && d.supplier.toLowerCase().includes(supplierName)) {
+    const invoiceMonth = new Date(d.invoiceDate);
+    const invoiceMonthStr = `${invoiceMonth.getFullYear()}-${String(invoiceMonth.getMonth() + 1).padStart(2, '0')}`;
+
+    if (
+      d.supplier && d.supplier.toLowerCase().includes(supplierName) &&
+      (!selectedMonth || invoiceMonthStr === selectedMonth)
+    ) {
       totalSum += d.totalAmount;
       count++;
-      supplierLabel = d.supplier; // اسم المورد الصحيح بالحروف الكبيرة
+      supplierLabel = d.supplier;
     }
   });
 
@@ -140,34 +147,4 @@ async function getSupplierReport() {
   html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('supplierTable')">📄 تصدير PDF</button>`;
 
   document.getElementById("supplierResults").innerHTML = html;
-}
-
-
-// تقرير المصاريف الشهرية
-async function generateMonthlyReport() {
-  const selectedMonth = document.getElementById("monthInput").value;
-  if (!selectedMonth) return alert("يرجى اختيار شهر");
-
-  const snapshot = await db.collection("invoices").get();
-  const summary = {};
-
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    const date = new Date(d.invoiceDate);
-    const month = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
-    const day = date.getDate();
-    if (month === selectedMonth) {
-      if (!summary[day]) summary[day] = 0;
-      summary[day] += d.totalAmount;
-    }
-  });
-
-  let html = `<table id="monthlyTable" class='table table-striped'><thead><tr><th>اليوم</th><th>المجموع (AED)</th></tr></thead><tbody>`;
-  for (const day in summary) {
-    html += `<tr><td>${day}</td><td>${summary[day].toFixed(2)}</td></tr>`;
-  }
-  html += `</tbody></table>`;
-  html += `<button class='btn btn-outline-primary me-2' onclick="exportTableToExcel('monthlyTable')">📥 تصدير Excel</button>`;
-  html += `<button class='btn btn-outline-danger' onclick="exportTableToPDF('monthlyTable')">📄 تصدير PDF</button>`;
-  document.getElementById("monthlyResults").innerHTML = html;
 }
