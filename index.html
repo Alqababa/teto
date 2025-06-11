@@ -1,113 +1,112 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>نظام تسجيل الفواتير</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
-    />
-    <style>
-      .error-message {
-        color: red;
-        font-size: 0.8rem;
-        display: none;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام تسجيل الفواتير</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <style>
+    .nav-tabs .nav-link.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <ul class="nav nav-tabs mb-4" id="tabs">
+      <li class="nav-item">
+        <button class="nav-link active" id="add-invoice-tab" data-bs-toggle="tab" data-bs-target="#addInvoice">تسجيل فاتورة</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="supplier-summary-tab" data-bs-toggle="tab" data-bs-target="#supplierSummary">فواتير المورد</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="monthly-summary-tab" data-bs-toggle="tab" data-bs-target="#monthlySummary">فواتير الشهر</button>
+      </li>
+    </ul>
 
-      .item-row {
-        border: 1px solid #e0e0e0;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        background-color: #f9f9f9;
-      }
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="addInvoice">
+        <form id="invoiceForm">
+          <div class="mb-3">
+            <label>اسم الشركة / المورد</label>
+            <input type="text" id="supplier" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>تاريخ الفاتورة</label>
+            <input type="date" id="invoiceDate" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>ملاحظات (اختياري)</label>
+            <textarea id="notes" class="form-control"></textarea>
+          </div>
+          <div id="itemsContainer" class="mb-3"></div>
+          <button type="button" class="btn btn-secondary mb-3" id="addItemBtn">➕ إضافة مادة</button>
+          <div class="mb-3">
+            <strong>المجموع: <span id="totalAmount">0.00</span> AED</strong>
+            <input type="hidden" id="totalAmountInput">
+          </div>
+          <button type="submit" class="btn btn-success">💾 حفظ الفاتورة</button>
+          <div id="successAlert" class="alert alert-success mt-3" style="display: none;">تم حفظ الفاتورة بنجاح ✅</div>
+        </form>
+      </div>
 
-      .item-row input {
-        margin-bottom: 5px;
-      }
+      <div class="tab-pane fade" id="supplierSummary">
+        <!-- سيتم تعبئته من js -->
+      </div>
 
-      .remove-item {
-        margin-top: 30px;
-      }
-
-      #totalAmount {
-        font-size: 1.2rem;
-        color: #2c3e50;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container mt-5">
-      <ul class="nav nav-tabs mb-4" id="invoiceTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#formTab" type="button" role="tab">تسجيل فاتورة جديدة</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="supplier-summary-tab" data-bs-toggle="tab" data-bs-target="#supplierSummary" type="button" role="tab">مجموع فواتير المورد</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="monthly-summary-tab" data-bs-toggle="tab" data-bs-target="#monthlySummary" type="button" role="tab">مجموع فواتير الشهر</button>
-        </li>
-      </ul>
-
-      <div class="tab-content" id="invoiceTabsContent">
-        <!-- تبويب تسجيل الفاتورة -->
-        <div class="tab-pane fade show active" id="formTab" role="tabpanel">
-          <form id="invoiceForm">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">تاريخ الفاتورة</label>
-                <input type="date" class="form-control" id="invoiceDate" required />
-                <div class="error-message" id="invoiceDateError">يجب إدخال تاريخ الفاتورة</div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">اسم المورد</label>
-                <input type="text" class="form-control" id="supplier" required />
-                <div class="error-message" id="supplierError">يجب إدخال اسم المورد</div>
-              </div>
-            </div>
-
-            <h5 class="mb-3">تفاصيل المواد</h5>
-            <div id="itemsContainer" class="mb-3"></div>
-
-            <button type="button" id="addItemBtn" class="btn btn-secondary mb-3">➕ إضافة مادة</button>
-
-            <div class="row mb-3">
-              <div class="col-md-6 fw-bold">
-                المجموع: <span id="totalAmount">0.00</span> AED
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">ملاحظات</label>
-              <textarea class="form-control" id="notes" rows="2" placeholder="اختياري"></textarea>
-            </div>
-
-            <input type="hidden" id="totalAmountInput" name="totalAmountInput" />
-
-            <div class="d-grid gap-2 mb-3">
-              <button type="submit" class="btn btn-primary btn-lg">💾 حفظ الفاتورة</button>
-            </div>
-          </form>
-          <div id="successAlert" class="alert alert-success mt-3" style="display: none">✅ تم حفظ الفاتورة بنجاح!</div>
-        </div>
-
-        <!-- تبويب مجموع فواتير المورد -->
-        <div class="tab-pane fade" id="supplierSummary" role="tabpanel">
-          <p>هنا سيتم عرض مجموع فواتير المورد حسب الفلترة...</p>
-        </div>
-
-        <!-- تبويب مجموع فواتير الشهر -->
-        <div class="tab-pane fade" id="monthlySummary" role="tabpanel">
-          <p>هنا سيتم عرض مجموع الفواتير لكل شهر...</p>
-        </div>
+      <div class="tab-pane fade" id="monthlySummary">
+        <!-- سيتم تعبئته من js -->
       </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
-  </body>
+    <div class="mt-4 text-end">
+      <button onclick="exportToExcel()" class="btn btn-outline-dark">📤 تصدير Excel</button>
+      <button onclick="exportToPDF()" class="btn btn-outline-danger">📄 تصدير PDF</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function exportToExcel() {
+      const tables = document.querySelectorAll(".tab-pane.active ul");
+      if (!tables.length) return alert("لا توجد بيانات للتصدير");
+
+      const data = [];
+      tables[0].querySelectorAll("li").forEach(row => {
+        const label = row.childNodes[0].textContent.trim();
+        const value = row.querySelector(".badge").textContent;
+        data.push([label, value]);
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([["التصنيف", "القيمة"], ...data]);
+      XLSX.utils.book_append_sheet(wb, ws, "تقرير");
+      XLSX.writeFile(wb, "report.xlsx");
+    }
+
+    async function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const rows = [];
+      document.querySelectorAll(".tab-pane.active ul li").forEach((li, i) => {
+        const label = li.childNodes[0].textContent.trim();
+        const value = li.querySelector(".badge").textContent;
+        rows.push([label, value]);
+      });
+      doc.text("تقرير الفواتير", 14, 20);
+      doc.autoTable({
+        head: [["التصنيف", "القيمة"]],
+        body: rows,
+        startY: 30
+      });
+      doc.save("report.pdf");
+    }
+  </script>
+</body>
 </html>
